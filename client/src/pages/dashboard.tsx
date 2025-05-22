@@ -109,43 +109,115 @@ export default function Dashboard() {
   }, [isConnected, isCapturing, startCapture, stopCapture, send, selectedDeviceId, settings]);
 
   return (
-    <div className="p-4 md:p-6 max-w-6xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">Live Projection Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Control verse detection and projection</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Modern dashboard header with gradient */}
+      <header className="bg-white dark:bg-gray-800 shadow-md border-b border-gray-200 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Live Projection Dashboard
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">
+                Control verse detection and automatic projection
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                <span className="font-medium">Bible Version:</span> {settings?.bibleVersion || 'KJV'}
+              </div>
+              <div className={`h-3 w-3 rounded-full ${isProjectionActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+            </div>
+          </div>
+        </div>
       </header>
       
-      <StatusIndicator 
-        isActive={isProjectionActive} 
-        audioSource={settings?.audioInput || 'Default Microphone'}
-        bibleVersion={settings?.bibleVersion || 'KJV'}
-        confidenceThreshold={settings?.confidenceThreshold || 70}
-      />
-      
-      <TranscriptionView 
-        text={transcriptionResult?.text || ''} 
-        isActive={isProjectionActive}
-      />
-      
-      <MatchesTable 
-        matches={transcriptionResult?.matches || []} 
-        onSelectMatch={handleSelectMatch}
-        selectedVerseRef={selectedVerse?.reference || null}
-        isActive={isProjectionActive}
-      />
-      
-      <VerseSearch 
-        onSearch={setSearchTerm}
-        onSelectResult={handleSelectSearchResult}
-        searchResults={searchResults}
-        isSearching={isSearching}
-      />
-      
-      <DetectionHistoryList 
-        history={detectionHistory}
-        onReproject={handleReproject}
-        isLoading={historyLoading}
-      />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - 2/3 width on large screens */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Status card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="p-6">
+                <StatusIndicator 
+                  isActive={isProjectionActive} 
+                  audioSource={settings?.audioInput || 'Default Microphone'}
+                  bibleVersion={settings?.bibleVersion || 'KJV'}
+                  confidenceThreshold={settings?.confidenceThreshold || 70}
+                />
+              </div>
+            </div>
+            
+            {/* Transcription view card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                  <span className="mr-2">Live Transcription</span>
+                  {isProjectionActive && (
+                    <span className="flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                    </span>
+                  )}
+                </h2>
+              </div>
+              <div className="p-6">
+                <TranscriptionView 
+                  text={transcriptionResult?.text || ''} 
+                  isActive={isProjectionActive}
+                />
+              </div>
+            </div>
+            
+            {/* Matches table card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detected Verses</h2>
+              </div>
+              <div className="p-6">
+                <MatchesTable 
+                  matches={transcriptionResult?.matches || []} 
+                  onSelectMatch={handleSelectMatch}
+                  selectedVerseRef={selectedVerse?.reference || null}
+                  isActive={isProjectionActive}
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Sidebar - 1/3 width on large screens */}
+          <div className="space-y-6">
+            {/* Search card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Manual Search</h2>
+              </div>
+              <div className="p-6">
+                <VerseSearch 
+                  onSearch={setSearchTerm}
+                  onSelectResult={handleSelectSearchResult}
+                  searchResults={searchResults}
+                  isSearching={isSearching}
+                />
+              </div>
+            </div>
+            
+            {/* History card */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Detection History</h2>
+              </div>
+              <div className="p-6">
+                <DetectionHistoryList 
+                  history={detectionHistory}
+                  onReproject={handleReproject}
+                  isLoading={historyLoading}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

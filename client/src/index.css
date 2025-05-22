@@ -47,10 +47,42 @@
   }
 }
 
+@layer utilities {
+  /* Custom hover effect utilities */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-lift:hover {
+    @apply transform -translate-y-1 shadow-xl;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300;
+  }
+  
+  .hover-glow:hover {
+    @apply shadow-[0_0_15px_rgba(79,70,229,0.5)];
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-indigo-600 to-purple-600;
+  }
+  
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-600;
+  }
+}
+
 @layer components {
   /* Stylish modern cards */
   .sleek-card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-xl hover-lift overflow-hidden border border-gray-100 dark:border-gray-700;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700;
+  }
+  
+  .sleek-card:hover {
+    @apply transform -translate-y-1 shadow-xl;
   }
   
   /* Gradient buttons */
