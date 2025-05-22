@@ -1,28 +1,49 @@
 import { storage } from './storage';
 import type { TranscriptionResult, VerseMatch } from '@shared/schema';
+import OpenAI from 'openai';
+import fs from 'fs';
+import path from 'path';
 
-// Simulate Whisper transcription and BERT semantic matching
-// In a real implementation, this would use the OpenAI Whisper API
-// and a BERT model for semantic matching
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
+// Advanced Bible verse detection using OpenAI Whisper for transcription
+// and semantic matching for Bible verse identification
 export async function processAudio(audioBuffer: Buffer, settings: { bibleVersion: string, confidenceThreshold: number }): Promise<TranscriptionResult> {
-  console.log('Processing audio...');
+  console.log('Processing audio with OpenAI Whisper...');
   
-  // Simulate audio processing delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  let transcriptionText = '';
   
-  // For demo purposes, we'll simulate transcription with predefined phrases
-  // In a real implementation, this would use Whisper API
-  const transcriptions = [
-    "For God so loved the world, that He gave His only Son",
-    "God demonstrates His own love toward us, in that while we were yet sinners",
-    "In this the love of God was manifested toward us, that God has sent His only begotten Son",
-    "For God did not send His Son into the world to condemn the world",
-    "Let me read from John 3:16 in the Bible"
-  ];
-  
-  // Randomly select a transcription
-  const transcriptionText = transcriptions[Math.floor(Math.random() * transcriptions.length)];
+  try {
+    // Create a temporary file to store the audio buffer
+    const tempDir = path.join(process.cwd(), 'temp');
+    
+    // Ensure temp directory exists
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const tempFilePath = path.join(tempDir, `audio-${Date.now()}.wav`);
+    fs.writeFileSync(tempFilePath, audioBuffer);
+    
+    // Use OpenAI's Whisper model to transcribe the audio
+    const transcription = await openai.audio.transcriptions.create({
+      file: fs.createReadStream(tempFilePath),
+      model: "whisper-1",
+      language: "en",
+    });
+    
+    transcriptionText = transcription.text;
+    console.log('Transcription complete:', transcriptionText);
+    
+    // Delete temporary file
+    fs.unlinkSync(tempFilePath);
+  } catch (error) {
+    console.error('Error transcribing audio:', error);
+    throw new Error('Failed to transcribe audio. Please check your OpenAI API key and try again.');
+  }
   
   // Find matching Bible verses
   let matches: VerseMatch[] = [];
