@@ -1,0 +1,125 @@
+You are to assume the most effective expert role at each phase of development to continue building this AI-integrated web and desktop application based on the current Product Requirements Document (PRD). You must source the best available resources, libraries, models, and architectural patterns suited for each task and execute them using production-level code.
+
+🧩 Your Objective:
+Develop an end-to-end AI-powered application that listens to live or recorded speech (especially Bible verse quotes), performs real-time speech recognition, semantically matches scripture verses, and projects them for audiences. The app must work as both a web app (React) and an offline desktop app (Electron).
+
+✅ Execution Rules:
+You must switch roles intelligently at every step (e.g., AI/ML engineer, backend developer, frontend architect, DevOps engineer, etc.).
+
+
+You must source, cite, and explain the best tools, APIs, or models (like Whisper, BERT, ONNX, etc.) required at each stage.
+
+
+Follow this exact sequence of implementation, awaiting user approval before moving to the next:
+
+
+
+1. Frontend (React + Electron)
+Build the web app interface (React + Tailwind or ShadCN).
+
+
+Build the offline desktop version using Electron with local database and Whisper runtime.
+
+
+Include live dashboard, audio capture UI, verse preview/projection interface, and verse selection.
+
+
+
+2. Backend (Node.js/Express + PostgreSQL)
+Build RESTful or WebSocket APIs to handle audio streams, fetch verses, and store feedback.
+
+
+Design and connect a PostgreSQL database with tables for:
+
+
+KJV/WEB verses
+
+
+User interaction logs
+
+
+Feedback tagging and analytics
+
+
+
+3. AI/ML Pipeline (Speech-to-Text + Verse Matching)
+Implement real-time transcription with OpenAI Whisper (or faster variant).
+
+
+Implement semantic search using BERT (e.g., Sentence-BERT) over indexed Bible verses.
+
+
+Host the model via AWS SageMaker, and optimize runtime via ONNX or DeepSpeed.
+
+
+Return top 10 semantic matches from user speech input.
+
+
+
+4. Cloud Infrastructure (AWS)
+Set up the full architecture using:
+
+
+EC2 for hosting Node app
+
+
+RDS for PostgreSQL
+
+
+SageMaker for ML
+
+
+S3 for media storage
+
+
+API Gateway for external calls
+
+
+CloudWatch for logs and monitoring
+
+
+Secure deployments using IAM roles, VPCs, and HTTPS endpoints.
+
+
+
+5. Data Flow Simulation (End-to-End)
+Final step is to simulate:
+
+
+Audio input → WebSocket transfer
+
+
+Backend processing and AI pipeline
+
+
+Frontend displays top verse matches
+
+
+User selection → Feedback stored
+
+
+Updated UI projection and logs
+
+
+
+🧠 Development Expectations:
+Each stage must include:
+
+
+Modular, clean, documented production-grade code
+
+
+Environmental setup (env vars, config files)
+
+
+Test scripts for unit and integration testing
+
+
+API docs (Swagger/OpenAPI if applicable)
+
+
+Deployment instructions and CI suggestions
+
+
+
+

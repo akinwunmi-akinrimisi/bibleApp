@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Base colors */
+  --background: 0 0% 96%;
+  --foreground: 222 47% 11%;
+  
+  /* Muted colors */
+  --muted: 210 20% 98%;
+  --muted-foreground: 215 16% 47%;
+  
+  /* Card colors */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  
+  /* Popover colors */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  
+  /* Border colors */
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  
+  /* Primary colors (blue) */
+  --primary: 207 90% 54%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary colors (green) */
+  --secondary: 122 39% 40%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Accent colors */
+  --accent: 210 40% 96%;
+  --accent-foreground: 222 47% 11%;
+  
+  /* Destructive colors */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  /* Ring colors */
+  --ring: 207 90% 54%;
+  
+  /* Sidebar colors */
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-primary: 207 90% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 40% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 91%;
+  --sidebar-ring: 207 90% 54%;
+  
+  /* Other */
+  --radius: 0.5rem;
+  
+  /* Custom colors for application */
+  --parchment: 40 54% 94%;
+  --ink: 210 40% 25%;
+}
+
+.dark {
+  /* Base colors */
+  --background: 222 47% 11%;
+  --foreground: 210 20% 98%;
+  
+  /* Muted colors */
+  --muted: 223 47% 11%;
+  --muted-foreground: 215 20% 65%;
+  
+  /* Card colors */
+  --card: 224 71% 4%;
+  --card-foreground: 210 20% 98%;
+  
+  /* Popover colors */
+  --popover: 224 71% 4%;
+  --popover-foreground: 210 20% 98%;
+  
+  /* Border colors */
+  --border: 215 28% 17%;
+  --input: 215 28% 17%;
+  
+  /* Primary colors (blue) */
+  --primary: 207 90% 54%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary colors (green) */
+  --secondary: 122 39% 40%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Accent colors */
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 20% 98%;
+  
+  /* Destructive colors */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  
+  /* Ring colors */
+  --ring: 207 90% 54%;
+  
+  /* Sidebar colors */
+  --sidebar-background: 224 71% 4%;
+  --sidebar-foreground: 210 20% 98%;
+  --sidebar-primary: 207 90% 54%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 33% 17%;
+  --sidebar-accent-foreground: 210 20% 98%;
+  --sidebar-border: 215 28% 17%;
+  --sidebar-ring: 207 90% 54%;
+  
+  /* Custom colors for application */
+  --parchment: 35 10% 15%;
+  --ink: 220 13% 91%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-sans antialiased bg-background text-foreground transition-colors duration-300;
+  }
+  
+  .material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .bg-parchment {
+    background-color: hsl(var(--parchment));
+  }
+  
+  .bg-parchment-dark {
+    background-color: hsl(var(--parchment) / 30%);
+  }
+  
+  .text-ink-DEFAULT {
+    color: hsl(var(--ink));
+  }
+  
+  .primary-50 {
+    background-color: hsl(var(--primary) / 5%);
+  }
+  
+  .primary-100 {
+    background-color: hsl(var(--primary) / 10%);
+  }
+  
+  .primary-400 {
+    color: hsl(var(--primary) / 90%);
+  }
+  
+  .primary-500 {
+    color: hsl(var(--primary));
+  }
+  
+  .primary-600 {
+    color: hsl(var(--primary));
+  }
+
+  .primary-700 {
+    color: hsl(var(--primary) / 90%);
+  }
+  
+  .primary-900 {
+    color: hsl(var(--primary) / 40%);
+  }
+  
+  .secondary-600 {
+    color: hsl(var(--secondary));
+  }
+  
+  .bg-primary-600 {
+    background-color: hsl(var(--primary));
+  }
+  
+  .bg-primary-700 {
+    background-color: hsl(var(--primary) / 90%);
+  }
+  
+  .bg-secondary-600 {
+    background-color: hsl(var(--secondary));
+  }
+  
+  .bg-secondary-700 {
+    background-color: hsl(var(--secondary) / 90%);
+  }
+  
+  .border-primary-600 {
+    border-color: hsl(var(--primary));
+  }
+  
+  .border-secondary-600 {
+    border-color: hsl(var(--secondary));
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
