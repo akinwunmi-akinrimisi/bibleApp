@@ -12,7 +12,7 @@ import {
   BookOpen,
   Clock
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.ts";
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuth();

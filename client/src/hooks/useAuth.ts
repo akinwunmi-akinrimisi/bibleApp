@@ -1,14 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 export function useAuth() {
   const { data: user, isLoading } = useQuery({
     queryKey: ["/api/auth/me"],
     queryFn: async () => {
       try {
-        return await apiRequest("/api/auth/me");
+        const res = await fetch("/api/auth/me", {
+          credentials: 'include',
+        });
+        
+        if (res.status === 401) {
+          return null;
+        }
+        
+        return await res.json();
       } catch (error) {
-        // If the request fails with 401, the user is not authenticated
+        // If the request fails, the user is not authenticated
         return null;
       }
     },

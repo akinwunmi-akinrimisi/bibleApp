@@ -7,12 +7,15 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { ThemeProvider } from '@/components/theme-provider';
 import NotFound from '@/pages/not-found';
 import LoginPage from '@/pages/login';
+import LandingPage from '@/pages/landing';
+import RegisterPage from '@/pages/register';
 import Dashboard from '@/pages/dashboard';
 import Settings from '@/pages/settings';
 import { ProjectionWindow } from '@/components/projection-window';
 import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/sidebar';
 import { useProjection } from '@/hooks/use-projection';
+import { useAuth } from './hooks/useAuth';
 
 function AppRouter() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -39,14 +42,17 @@ function AppRouter() {
     },
   });
 
+  // Public routes that don't require authentication
+  const publicRoutes = ['/', '/register', '/login', '/projection'];
+
   useEffect(() => {
-    // Redirect to login if not authenticated
-    if (isLoggedIn === false && location !== '/login' && location !== '/projection') {
+    // Redirect to login if not authenticated and trying to access protected route
+    if (isLoggedIn === false && !publicRoutes.includes(location)) {
       setLocation('/login');
     }
-    // Redirect to dashboard if authenticated but on login page
-    else if (isLoggedIn === true && location === '/login') {
-      setLocation('/');
+    // Redirect to dashboard if authenticated but on login/register page
+    else if (isLoggedIn === true && (location === '/login' || location === '/register')) {
+      setLocation('/dashboard');
     }
   }, [isLoggedIn, location, setLocation]);
 
@@ -60,8 +66,16 @@ function AppRouter() {
     return <ProjectionWindow />;
   }
 
-  // Login page (when not authenticated)
-  if (!isLoggedIn) {
+  // Public routes - Landing, Login, Register
+  if (location === '/' && !isLoggedIn) {
+    return <LandingPage />;
+  }
+
+  if (location === '/register') {
+    return <RegisterPage />;
+  }
+
+  if (location === '/login' || !isLoggedIn) {
     return <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />;
   }
 
@@ -76,8 +90,9 @@ function AppRouter() {
       
       <main className="flex-1 overflow-x-hidden">
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/settings" component={Settings} />
+          <Route path="/" component={Dashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>
