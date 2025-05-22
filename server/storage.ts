@@ -39,6 +39,7 @@ export interface IStorage {
   searchVersesByText(text: string, version: string): Promise<any[]>;
   addVerse(verse: { reference: string, text: string, version: string }): Promise<void>;
   getVersesCount(): Promise<number>;
+  getVersesCountByVersion(): Promise<Record<string, number>>;
 }
 
 export class DatabaseStorage implements IStorage {
