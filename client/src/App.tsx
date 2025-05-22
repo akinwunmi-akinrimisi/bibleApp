@@ -9,6 +9,8 @@ import NotFound from '@/pages/not-found';
 import LoginPage from '@/pages/login';
 import LandingPage from '@/pages/landing';
 import RegisterPage from '@/pages/register';
+import PricingPage from '@/pages/pricing';
+import FeaturesPage from '@/pages/features';
 import Dashboard from '@/pages/dashboard';
 import Settings from '@/pages/settings';
 import { ProjectionWindow } from '@/components/projection-window';
@@ -43,7 +45,7 @@ function AppRouter() {
   });
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/register', '/login', '/projection'];
+  const publicRoutes = ['/', '/register', '/login', '/projection', '/pricing', '/features'];
 
   useEffect(() => {
     // Redirect to login if not authenticated and trying to access protected route
@@ -66,13 +68,21 @@ function AppRouter() {
     return <ProjectionWindow />;
   }
 
-  // Public routes - Landing, Login, Register
+  // Public routes - Landing, Login, Register, Pricing
   if (location === '/' && !isLoggedIn) {
     return <LandingPage />;
   }
 
   if (location === '/register') {
     return <RegisterPage />;
+  }
+  
+  if (location === '/pricing') {
+    return <PricingPage />;
+  }
+  
+  if (location === '/features') {
+    return <FeaturesPage />;
   }
 
   if (location === '/login' || !isLoggedIn) {
