@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -30,10 +30,17 @@ export const settings = pgTable("settings", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   bibleVersion: text("bible_version").default("KJV"),
-  fontSize: integer("font_size").default(24),
+  fontSize: integer("font_size").default(48),
   textColor: text("text_color").default("#FFFFFF"),
   backgroundColor: text("background_color").default("#000000"),
-  fontFamily: text("font_family").default("Roboto"),
+  fontFamily: text("font_family").default("Inter"),
+  fontWeight: text("font_weight").default("normal"),
+  textAlign: text("text_align").default("center"),
+  projectionTheme: text("projection_theme").default("dark"),
+  backgroundImage: text("background_image"),
+  textShadow: boolean("text_shadow").default(true),
+  fadeAnimation: boolean("fade_animation").default(true),
+  displayDuration: integer("display_duration").default(0),
   confidenceThreshold: integer("confidence_threshold").default(70),
   audioInput: text("audio_input").default("default"),
 });
@@ -68,27 +75,14 @@ export const feedbackData = pgTable("feedback_data", {
 });
 
 // Schema for user insertion
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  email: true,
-  provider: true,
-  providerId: true,
-  profileImageUrl: true,
-  firstName: true,
-  lastName: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Schema for settings insertion
-export const insertSettingsSchema = createInsertSchema(settings).pick({
-  userId: true,
-  bibleVersion: true,
-  fontSize: true,
-  textColor: true,
-  backgroundColor: true,
-  fontFamily: true,
-  confidenceThreshold: true,
-  audioInput: true,
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
 });
 
 // Schema for detection history insertion

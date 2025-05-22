@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupWebSocket } from "./websocket";
 import { authenticateUser, validatePassword, generatePasswordHash, requireAuth } from "./auth";
 import { searchVerses, getBibleVerses } from "./bible-service";
+import { emailService } from "./email-service";
 import express from "express";
 import bibleRoutes from "./routes/bible-routes";
 

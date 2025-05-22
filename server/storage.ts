@@ -98,6 +98,37 @@ export class DatabaseStorage implements IStorage {
     // Otherwise create a new user
     return this.createUser(userData);
   }
+
+  async updateUserEmailVerification(userId: number, verified: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        emailVerified: verified,
+        emailVerificationToken: null,
+        emailVerificationExpires: null
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserSubscription(userId: number, subscriptionData: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(subscriptionData)
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserOnboarding(userId: number, completed: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ onboardingCompleted: completed })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
   
   // Settings operations
   async getSettingsByUserId(userId: number): Promise<Settings | undefined> {
