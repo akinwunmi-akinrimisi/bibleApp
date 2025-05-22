@@ -16,7 +16,8 @@ import {
   Lightbulb,
   Braces,
   Server,
-  Code
+  Code,
+  Globe
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth.ts";
 

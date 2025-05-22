@@ -50,42 +50,48 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-20">
-        <div className="container mx-auto px-4 max-w-6xl">
+      {/* Hero Section - Enhanced with glass morphism and animations */}
+      <section className="glass-hero py-24 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-indigo-950 dark:to-purple-950 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float delay-300"></div>
+        
+        <div className="container mx-auto px-4 max-w-6xl relative z-10">
           <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                Automatic Bible Verse Detection for Church Services
+            <div className="md:w-1/2 mb-10 md:mb-0 animate-slideInLeft">
+              <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
+                <span className="highlighted-text">Automatic</span> Bible Verse Detection for Church Services
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                 VerseProjection listens to your sermon and automatically detects, identifies and projects Bible verses in real-time. No more manual searching or interruptions.
               </p>
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link href="/register">
-                  <Button size="lg" className="w-full sm:w-auto">
-                    Start Free Trial <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <button className="gradient-button py-3 px-6 text-lg font-medium flex items-center">
+                    <span>Start Free Trial</span> 
+                    <ChevronRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </button>
                 </Link>
                 <a href="#demo">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto hover-glow">
                     Watch Demo
                   </Button>
                 </a>
               </div>
             </div>
-            <div className="md:w-1/2 md:pl-10">
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg">
+            <div className="md:w-1/2 md:pl-10 animate-slideInRight">
+              <div className="sleek-card relative overflow-hidden">
+                <div className="absolute -top-6 -right-6 w-12 h-12 bg-primary rounded-full opacity-40 blur-md"></div>
                 <img 
                   src="https://i.imgur.com/8cwmZQl.png" 
                   alt="VerseProjection in action" 
-                  className="w-full rounded-lg"
+                  className="w-full rounded-t-lg"
                 />
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                  <p className="text-center text-gray-700 dark:text-gray-300 italic">
+                <div className="p-6 bg-white dark:bg-gray-800">
+                  <p className="text-center text-gray-700 dark:text-gray-300 italic text-lg">
                     "And the Word became flesh and dwelt among us..."
                   </p>
-                  <p className="text-center text-primary font-semibold mt-2">
+                  <p className="text-center text-primary font-semibold mt-2 text-lg">
                     John 1:14 (KJV)
                   </p>
                 </div>
@@ -95,81 +101,98 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-20 bg-white dark:bg-gray-900">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+      {/* Features Section - Enhanced with animations and modern styling */}
+      <section id="features" className="py-28 bg-white dark:bg-gray-900 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-primary/5 rounded-full"></div>
+        <div className="absolute top-1/2 right-0 w-32 h-96 bg-primary/5 rounded-l-full"></div>
+        
+        <div className="container mx-auto px-4 max-w-6xl relative z-10">
+          <div className="text-center mb-20 animate-fadeIn">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 relative inline-block">
               Powerful Features for Modern Churches
+              <div className="absolute -bottom-3 left-0 h-1 w-24 bg-primary rounded-full mx-auto right-0"></div>
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
               VerseProjection combines cutting-edge AI technology with intuitive design to enhance your church service experience.
             </p>
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <Headphones className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-100">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <Headphones className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 Real-time Audio Recognition
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Our advanced audio processing captures and transcribes spoken content with high accuracy, even in noisy environments.
               </p>
             </div>
             
             {/* Feature 2 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <BookOpen className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-200">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <BookOpen className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 Advanced Verse Detection
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Identifies both explicit references (John 3:16) and paraphrased quotes with remarkable accuracy.
               </p>
             </div>
             
             {/* Feature 3 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <MonitorSmartphone className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-300">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <MonitorSmartphone className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 Multiple Bible Translations
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Support for multiple translations including KJV and World English Bible, with more translations coming soon.
               </p>
             </div>
             
             {/* Feature 4 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <Zap className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-100">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <Zap className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 One-Click Projection
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Select detected verses with a single click to instantly project them on your church display system.
               </p>
             </div>
             
             {/* Feature 5 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <Clock className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-200">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <Clock className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 Detection History
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Keep track of all detected verses during your service and access them later for reference.
               </p>
             </div>
             
             {/* Feature 6 */}
-            <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-xl">
-              <Award className="h-12 w-12 text-primary mb-6" />
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className="sleek-card p-8 hover-lift group animate-fadeIn delay-300">
+              <div className="gradient-primary-subtle p-4 rounded-full inline-block mb-6 group-hover:animate-pulse-custom">
+                <Award className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 group-hover:text-primary transition-colors">
                 Customizable Display
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 Personalize how verses appear on screen with custom fonts, colors, and formatting options.
               </p>
             </div>

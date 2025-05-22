@@ -2,6 +2,94 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/custom-animations.css';
+
+@layer base {
+  :root {
+    --primary: 250 82% 55%;  /* Vibrant indigo */
+    --primary-foreground: 210 40% 98%;
+    
+    --secondary: 223 100% 62%;  /* Bright blue */
+    --secondary-foreground: 210 40% 98%;
+    
+    --accent: 262 83% 58%;  /* Rich purple */
+    --accent-foreground: 210 40% 98%;
+    
+    --background-light: 210 40% 98%;
+    --text-light: 222 47% 11%;
+    
+    --background-dark: 222 47% 11%;
+    --text-dark: 210 40% 98%;
+  }
+  
+  /* Enhanced scrollbar for a premium feel */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(79, 70, 229, 0.5);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(79, 70, 229, 0.7);
+  }
+  
+  /* Smooth scrolling for the entire site */
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Stylish modern cards */
+  .sleek-card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-xl hover-lift overflow-hidden border border-gray-100 dark:border-gray-700;
+  }
+  
+  /* Gradient buttons */
+  .gradient-button {
+    @apply relative overflow-hidden gradient-primary text-white rounded-lg shadow-md transition-all duration-300 hover:shadow-lg;
+  }
+  
+  .gradient-button::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-black opacity-0 transition-opacity duration-300;
+  }
+  
+  .gradient-button:hover::before {
+    @apply opacity-10;
+  }
+  
+  /* Glass hero sections */
+  .glass-hero {
+    @apply relative overflow-hidden;
+  }
+  
+  .glass-hero::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary/10 to-accent/10 z-0;
+  }
+  
+  /* Floating elements */
+  .floating-element {
+    @apply animate-float;
+  }
+  
+  /* Highlighted text */
+  .highlighted-text {
+    @apply relative inline-block;
+  }
+  
+  .highlighted-text::after {
+    @apply content-[''] absolute bottom-1 left-0 w-full h-3 bg-primary/20 -z-10;
+  }
+}
+
 :root {
   /* Base colors */
   --background: 0 0% 96%;
