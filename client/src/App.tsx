@@ -102,7 +102,6 @@ function AppRouter() {
         <Switch>
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/settings" component={Settings} />
-          <Route path="/" component={Dashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

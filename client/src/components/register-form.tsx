@@ -21,10 +21,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
 const registerSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Please enter a valid email address'),
+  organizationName: z.string().min(1, 'Organization or individual name is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  trialAccess: z.boolean().default(true)
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
