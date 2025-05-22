@@ -20,53 +20,62 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
-const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
+const registerSchema = z.object({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
-interface LoginFormProps {
-  onLoginSuccess: () => void;
-  onSwitchToRegister?: () => void;
+interface RegisterFormProps {
+  onRegisterSuccess: () => void;
+  onSwitchToLogin: () => void;
 }
 
-export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps) {
+export function RegisterForm({ onRegisterSuccess, onSwitchToLogin }: RegisterFormProps) {
   const { theme, toggleTheme } = useThemeContext();
   const { toast } = useToast();
   
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: '',
+      email: '',
       password: '',
+      confirmPassword: '',
     },
   });
 
-  const loginMutation = useMutation({
-    mutationFn: async (data: LoginFormValues) => {
-      const response = await apiRequest('POST', '/api/auth/login', data);
+  const registerMutation = useMutation({
+    mutationFn: async (data: Omit<RegisterFormValues, 'confirmPassword'>) => {
+      const { confirmPassword, ...registerData } = data as any;
+      const response = await apiRequest('POST', '/api/auth/register', registerData);
       return response.json();
     },
     onSuccess: () => {
       toast({
         title: 'Success',
-        description: 'Logged in successfully',
+        description: 'Account created successfully',
       });
-      onLoginSuccess();
+      onRegisterSuccess();
     },
     onError: (error) => {
       toast({
-        title: 'Login failed',
-        description: error instanceof Error ? error.message : 'Invalid credentials',
+        title: 'Registration failed',
+        description: error instanceof Error ? error.message : 'Username may already be taken',
         variant: 'destructive',
       });
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
-    loginMutation.mutate(data);
+  const onSubmit = (data: RegisterFormValues) => {
+    const { confirmPassword, ...registerData } = data;
+    registerMutation.mutate(registerData);
   };
 
   return (
@@ -78,7 +87,7 @@ export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps
           </div>
         </div>
         
-        <h2 className="text-xl font-bold text-center mb-6">Sign in to your account</h2>
+        <h2 className="text-xl font-bold text-center mb-6">Create an account</h2>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -102,13 +111,48 @@ export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps
             
             <FormField
               control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="email"
+                      placeholder="you@example.com" 
+                      {...field} 
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex justify-between">
-                    <FormLabel>Password</FormLabel>
-                    <a href="#" className="text-sm text-primary-600 hover:underline">Forgot password?</a>
-                  </div>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="••••••••" 
+                      {...field} 
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
@@ -125,49 +169,27 @@ export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps
             <Button 
               type="submit" 
               className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-md"
-              disabled={loginMutation.isPending}
+              disabled={registerMutation.isPending}
             >
-              {loginMutation.isPending ? 'Signing in...' : 'Sign in'}
+              {registerMutation.isPending ? 'Creating account...' : 'Create account'}
             </Button>
           </form>
         </Form>
         
-        <div className="relative my-6">
-          <Separator />
-          <div className="relative flex justify-center -mt-3">
-            <span className="px-2 bg-surface-light dark:bg-surface-dark text-sm text-gray-500 dark:text-gray-400">Or continue with</span>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button variant="outline" className="flex items-center justify-center py-2">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" />
-            </svg>
-            <span>Google</span>
-          </Button>
-          <Button variant="outline" className="flex items-center justify-center py-2">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 6H3V20H21V6ZM17 14H13V18H11V14H7V12H11V8H13V12H17V14Z" />
-            </svg>
-            <span>Microsoft</span>
-          </Button>
-        </div>
-        
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+            Already have an account?{' '}
             <Button 
               variant="link" 
               className="p-0 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300"
-              onClick={onSwitchToRegister}
+              onClick={onSwitchToLogin}
             >
-              Create an account
+              Sign in
             </Button>
           </p>
         </div>
         
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-6">
           <span className="text-xs text-gray-500 dark:text-gray-400">v1.0.0</span>
           <Button 
             variant="ghost" 
