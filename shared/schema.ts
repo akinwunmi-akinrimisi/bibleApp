@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email"),
+  provider: text("provider"),  // 'google', 'facebook', 'github', 'twitter', etc.
+  providerId: text("provider_id"), // ID from the provider
+  profileImageUrl: text("profile_image_url"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -58,6 +63,11 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   email: true,
+  provider: true,
+  providerId: true,
+  profileImageUrl: true,
+  firstName: true,
+  lastName: true,
 });
 
 // Schema for settings insertion

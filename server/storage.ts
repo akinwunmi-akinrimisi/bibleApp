@@ -20,7 +20,9 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: InsertUser): Promise<User>;
   
   // Settings operations
   getSettingsByUserId(userId: number): Promise<Settings | undefined>;
@@ -53,6 +55,12 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.username, username));
     return user;
   }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    if (!email) return undefined;
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values({
@@ -60,6 +68,32 @@ export class DatabaseStorage implements IStorage {
       createdAt: new Date()
     }).returning();
     return user;
+  }
+  
+  async upsertUser(userData: InsertUser): Promise<User> {
+    // If user exists with this email, update their info
+    if (userData.email) {
+      const existingUser = await this.getUserByEmail(userData.email);
+      
+      if (existingUser) {
+        // Update the user record
+        const [updated] = await db
+          .update(users)
+          .set({
+            ...userData,
+            // Don't update these fields if they exist
+            id: existingUser.id,
+            username: userData.username || existingUser.username,
+            password: userData.password || existingUser.password
+          })
+          .where(eq(users.id, existingUser.id))
+          .returning();
+        return updated;
+      }
+    }
+    
+    // Otherwise create a new user
+    return this.createUser(userData);
   }
   
   // Settings operations
@@ -114,8 +148,10 @@ export class DatabaseStorage implements IStorage {
     const [verse] = await db
       .select()
       .from(bibleVerses)
-      .where(eq(bibleVerses.reference, reference))
-      .where(eq(bibleVerses.version, version));
+      .where(and(
+        eq(bibleVerses.reference, reference),
+        eq(bibleVerses.version, version)
+      ));
       
     if (!verse) return undefined;
     
@@ -132,8 +168,10 @@ export class DatabaseStorage implements IStorage {
     const verses = await db
       .select()
       .from(bibleVerses)
-      .where(eq(bibleVerses.version, version))
-      .where(sql`${bibleVerses.text} ILIKE ${`%${text}%`}`)
+      .where(and(
+        eq(bibleVerses.version, version),
+        sql`${bibleVerses.text} ILIKE ${`%${text}%`}`
+      ))
       .limit(10);
       
     return verses.map(verse => ({
