@@ -36,7 +36,7 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 interface RegisterFormProps {
-  onRegisterSuccess: () => void;
+  onRegisterSuccess: (email: string, requiresVerification: boolean) => void;
   onSwitchToLogin: () => void;
 }
 

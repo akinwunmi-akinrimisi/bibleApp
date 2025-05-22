@@ -120,7 +120,7 @@ export function UserOnboarding({ onComplete }: UserOnboardingProps) {
       action: async () => {
         try {
           await navigator.mediaDevices.getUserMedia({ audio: true });
-          setCompletedSteps(prev => new Set([...prev, currentStep]));
+          setCompletedSteps(prev => new Set(Array.from(prev).concat([currentStep])));
         } catch (error) {
           console.warn('Microphone access denied');
         }

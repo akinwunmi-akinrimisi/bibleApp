@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/sidebar';
 import { useProjection } from '@/hooks/use-projection';
 import { useAuth } from './hooks/useAuth';
+import { EnhancedProjectionWindow } from '@/components/enhanced-projection-window';
 
 function AppRouter() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -66,6 +67,11 @@ function AppRouter() {
   // Special route for projection window (separate window)
   if (location === '/projection') {
     return <ProjectionWindow />;
+  }
+
+  // Enhanced projection window route
+  if (location === '/enhanced-projection') {
+    return <EnhancedProjectionWindow />;
   }
 
   // Public routes - Landing, Login, Register, Pricing
