@@ -1,5 +1,7 @@
 import { storage } from './storage';
 import type { VerseMatch } from '@shared/schema';
+import { loadFullBibleData } from './data/bible-data-loader';
+import { loadRealBibleData } from './data/real-bible-data';
 
 // Handle bible verse retrieval and search
 export async function searchVerses(query: string, version: string = 'KJV'): Promise<VerseMatch[]> {
@@ -70,12 +72,16 @@ export async function loadBibleTexts(): Promise<void> {
     
     if (versesCount > 0) {
       console.log(`Bible texts already loaded (${versesCount} verses)`);
+      
+      // If we only have a small number of verses, load the full Bible data
+      if (versesCount < 50) {
+        await loadFullBibleData();
+      }
+      
       return;
     }
     
-    // In a real implementation, this would load from JSON files or a database
-    // For demo purposes, we'll add commonly referenced verses
-    
+    // Initial core verses to ensure we have the most commonly used ones
     // Load KJV verses
     const kjvVerses = [
       { reference: 'John 3:16', text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', version: 'KJV' },
@@ -114,7 +120,25 @@ export async function loadBibleTexts(): Promise<void> {
     }
     
     console.log(`Loaded ${kjvVerses.length + webVerses.length} verses`);
+    
+    // Load the real Bible data asynchronously
+    setTimeout(async () => {
+      try {
+        // First try to load authentic Bible data from API
+        await loadRealBibleData();
+        
+        // If we need more verses, load additional simulated data
+        const versesCount = await storage.getVersesCount();
+        if (versesCount < 500) {
+          await loadFullBibleData();
+        }
+      } catch (err) {
+        console.error('Error loading Bible data:', err);
+      }
+    }, 5000); // Give the server some time to initialize before loading the full data
   } catch (error) {
     console.error('Failed to load Bible texts:', error);
   }
 }
+
+
