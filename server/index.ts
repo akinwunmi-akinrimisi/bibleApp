@@ -4,24 +4,17 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { loadBibleTexts } from "./bible-service";
 import { authenticateUser } from "./auth";
+import { setupOAuth } from "./oauth";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configure session middleware
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'default-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+// OAuth and authentication will be set up in the setupOAuth function
+// It already configures sessions and passport initialization
 
-// Add authentication middleware
-app.use(authenticateUser);
+// Set up OAuth with Passport.js
+setupOAuth(app);
 
 app.use((req, res, next) => {
   const start = Date.now();
