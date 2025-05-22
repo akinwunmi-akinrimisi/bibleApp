@@ -69,7 +69,7 @@ function AppRouter() {
   }
 
   // Public routes - Landing, Login, Register, Pricing
-  if (location === '/' && !isLoggedIn) {
+  if (location === '/') {
     return <LandingPage />;
   }
 

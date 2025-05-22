@@ -7,12 +7,13 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  email: text("email"),
-  provider: text("provider"),  // 'google', 'facebook', 'github', 'twitter', etc.
-  providerId: text("provider_id"), // ID from the provider
-  profileImageUrl: text("profile_image_url"),
-  firstName: text("first_name"),
-  lastName: text("last_name"),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  organizationName: text("organization_name").notNull(),
+  trialEnabled: boolean("trial_enabled").default(true),
+  trialStartDate: timestamp("trial_start_date").defaultNow(),
+  trialEndDate: timestamp("trial_end_date"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
