@@ -1,7 +1,8 @@
 import { storage } from './storage';
 import type { VerseMatch } from '@shared/schema';
-import { loadFullBibleData } from './data/bible-data-loader';
+import { loadFullBibleData as loadSimulatedBibleData } from './data/bible-data-loader';
 import { loadRealBibleData } from './data/real-bible-data';
+import { loadFullBibleData, loadPartialBibleData } from './data/full-bible-data';
 
 // Handle bible verse retrieval and search
 export async function searchVerses(query: string, version: string = 'KJV'): Promise<VerseMatch[]> {
@@ -121,16 +122,27 @@ export async function loadBibleTexts(): Promise<void> {
     
     console.log(`Loaded ${kjvVerses.length + webVerses.length} verses`);
     
-    // Load the real Bible data asynchronously
+    // Load the complete Bible data asynchronously
     setTimeout(async () => {
       try {
-        // First try to load authentic Bible data from API
-        await loadRealBibleData();
-        
-        // If we need more verses, load additional simulated data
+        // Get current verses count
         const versesCount = await storage.getVersesCount();
-        if (versesCount < 500) {
-          await loadFullBibleData();
+        
+        // Check if we have a substantial number of verses already
+        if (versesCount < 1000) {
+          console.log('Starting comprehensive Bible data download...');
+          
+          // Start with partial download to get essential chapters quickly
+          await loadPartialBibleData();
+          
+          // Then continue with the full Bible in the background
+          // This ensures we have the most commonly used verses available quickly
+          // while the rest of the Bible downloads in the background
+          loadFullBibleData().catch(err => {
+            console.error('Error loading full Bible data:', err);
+          });
+        } else {
+          console.log(`Already have ${versesCount} Bible verses. Skipping initial download.`);
         }
       } catch (err) {
         console.error('Error loading Bible data:', err);
