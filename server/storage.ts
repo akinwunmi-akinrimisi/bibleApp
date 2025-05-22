@@ -23,6 +23,9 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: InsertUser): Promise<User>;
+  updateUserEmailVerification(userId: number, verified: boolean): Promise<User>;
+  updateUserSubscription(userId: number, subscriptionData: Partial<User>): Promise<User>;
+  updateUserOnboarding(userId: number, completed: boolean): Promise<User>;
   
   // Settings operations
   getSettingsByUserId(userId: number): Promise<Settings | undefined>;
