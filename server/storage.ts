@@ -14,7 +14,7 @@ import {
   type InsertFeedbackData
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, like, sql } from "drizzle-orm";
+import { eq, desc, like, sql, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -151,6 +151,27 @@ export class DatabaseStorage implements IStorage {
   async getVersesCount(): Promise<number> {
     const [result] = await db.select({ count: sql<number>`count(*)` }).from(bibleVerses);
     return result?.count || 0;
+  }
+  
+  async getVersesCountByVersion(): Promise<Record<string, number>> {
+    try {
+      const results = await db
+        .select({
+          version: bibleVerses.version,
+          count: sql<number>`count(*)`
+        })
+        .from(bibleVerses)
+        .groupBy(bibleVerses.version);
+      
+      // Convert array of results to a record object
+      return results.reduce((acc, curr) => {
+        acc[curr.version] = curr.count;
+        return acc;
+      }, {} as Record<string, number>);
+    } catch (error) {
+      console.error('Failed to get verses count by version:', error);
+      return {};
+    }
   }
 }
 

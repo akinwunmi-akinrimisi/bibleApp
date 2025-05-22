@@ -5,6 +5,7 @@ import { setupWebSocket } from "./websocket";
 import { authenticateUser, validatePassword, generatePasswordHash, requireAuth } from "./auth";
 import { searchVerses, getBibleVerses } from "./bible-service";
 import express from "express";
+import bibleRoutes from "./routes/bible-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create HTTP server
@@ -15,6 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // API routes - all prefixed with /api
   const apiRouter = express.Router();
+  
+  // Register Bible routes
+  apiRouter.use('/bible', bibleRoutes);
   
   // Auth routes
   apiRouter.post('/auth/login', async (req, res) => {
