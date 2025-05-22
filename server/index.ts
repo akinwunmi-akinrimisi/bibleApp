@@ -54,6 +54,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Load Bible texts on startup
+  try {
+    await loadBibleTexts();
+    console.log('Bible texts loaded successfully');
+  } catch (error) {
+    console.error('Failed to load Bible texts:', error);
+  }
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
