@@ -1,8 +1,6 @@
 import { storage } from './storage';
 import type { VerseMatch } from '@shared/schema';
-import { loadFullBibleData as loadSimulatedBibleData } from './data/bible-data-loader';
-import { loadRealBibleData } from './data/real-bible-data';
-import { loadFullBibleData, loadPartialBibleData } from './data/full-bible-data';
+import { loadCompleteBible, loadEssentialBible } from './data/complete-bible-loader';
 
 // Handle bible verse retrieval and search
 export async function searchVerses(query: string, version: string = 'KJV'): Promise<VerseMatch[]> {
@@ -71,83 +69,38 @@ export async function loadBibleTexts(): Promise<void> {
     // Check if verses are already loaded
     const versesCount = await storage.getVersesCount();
     
-    if (versesCount > 0) {
+    if (versesCount > 20000) {
       console.log(`Bible texts already loaded (${versesCount} verses)`);
+      return;
+    }
+    
+    if (versesCount > 1000) {
+      console.log(`Bible partially loaded (${versesCount} verses). Checking if complete download is needed...`);
       
-      // If we only have a small number of verses, load the full Bible data
-      if (versesCount < 50) {
-        await loadFullBibleData();
-      }
+      // Start complete Bible download in background if we don't have enough verses
+      setTimeout(() => {
+        loadCompleteBible().catch(err => {
+          console.error('Error loading complete Bible:', err);
+        });
+      }, 10000);
       
       return;
     }
     
-    // Initial core verses to ensure we have the most commonly used ones
-    // Load KJV verses
-    const kjvVerses = [
-      { reference: 'John 3:16', text: 'For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.', version: 'KJV' },
-      { reference: 'John 3:17', text: 'For God sent not his Son into the world to condemn the world; but that the world through him might be saved.', version: 'KJV' },
-      { reference: 'Romans 5:8', text: 'But God commendeth his love toward us, in that, while we were yet sinners, Christ died for us.', version: 'KJV' },
-      { reference: '1 John 4:9', text: 'In this was manifested the love of God toward us, because that God sent his only begotten Son into the world, that we might live through him.', version: 'KJV' },
-      { reference: '1 John 4:10', text: 'Herein is love, not that we loved God, but that he loved us, and sent his Son to be the propitiation for our sins.', version: 'KJV' },
-      { reference: 'Psalm 23:1', text: 'The LORD is my shepherd; I shall not want.', version: 'KJV' },
-      { reference: 'Matthew 11:28', text: 'Come unto me, all ye that labour and are heavy laden, and I will give you rest.', version: 'KJV' },
-      { reference: 'Philippians 4:13', text: 'I can do all things through Christ which strengtheneth me.', version: 'KJV' },
-      { reference: 'Jeremiah 29:11', text: 'For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.', version: 'KJV' },
-      { reference: 'Romans 8:28', text: 'And we know that all things work together for good to them that love God, to them who are the called according to his purpose.', version: 'KJV' },
-      { reference: 'Isaiah 40:31', text: 'But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint.', version: 'KJV' },
-      { reference: 'Proverbs 3:5-6', text: 'Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.', version: 'KJV' },
-    ];
-    
-    // Load WEB verses
-    const webVerses = [
-      { reference: 'John 3:16', text: 'For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.', version: 'WEB' },
-      { reference: 'John 3:17', text: 'For God didn\'t send his Son into the world to judge the world, but that the world should be saved through him.', version: 'WEB' },
-      { reference: 'Romans 5:8', text: 'But God commends his own love toward us, in that while we were yet sinners, Christ died for us.', version: 'WEB' },
-      { reference: '1 John 4:9', text: 'By this God\'s love was revealed in us, that God has sent his one and only Son into the world that we might live through him.', version: 'WEB' },
-      { reference: '1 John 4:10', text: 'In this is love, not that we loved God, but that he loved us, and sent his Son as the atoning sacrifice for our sins.', version: 'WEB' },
-      { reference: 'Psalm 23:1', text: 'Yahweh is my shepherd; I shall lack nothing.', version: 'WEB' },
-      { reference: 'Matthew 11:28', text: 'Come to me, all you who labor and are heavily burdened, and I will give you rest.', version: 'WEB' },
-      { reference: 'Philippians 4:13', text: 'I can do all things through Christ who strengthens me.', version: 'WEB' },
-      { reference: 'Jeremiah 29:11', text: 'For I know the thoughts that I think toward you, says Yahweh, thoughts of peace, and not of evil, to give you hope and a future.', version: 'WEB' },
-      { reference: 'Romans 8:28', text: 'We know that all things work together for good for those who love God, for those who are called according to his purpose.', version: 'WEB' },
-      { reference: 'Isaiah 40:31', text: 'But those who wait for Yahweh will renew their strength. They will mount up with wings like eagles. They will run, and not be weary. They will walk, and not faint.', version: 'WEB' },
-      { reference: 'Proverbs 3:5-6', text: 'Trust in Yahweh with all your heart, and don\'t lean on your own understanding. In all your ways acknowledge him, and he will make your paths straight.', version: 'WEB' },
-    ];
-    
-    // Add verses to database
-    for (const verse of [...kjvVerses, ...webVerses]) {
-      await storage.addVerse(verse);
+    // If we have very few verses, start with essential books for immediate use
+    if (versesCount < 500) {
+      console.log('Loading essential Bible books first...');
+      await loadEssentialBible();
     }
     
-    console.log(`Loaded ${kjvVerses.length + webVerses.length} verses`);
+    // Start complete Bible download in the background
+    setTimeout(() => {
+      console.log('Starting complete Bible download in background...');
+      loadCompleteBible().catch(err => {
+        console.error('Error loading complete Bible:', err);
+      });
+    }, 15000); // Give the server time to initialize
     
-    // Load the complete Bible data asynchronously
-    setTimeout(async () => {
-      try {
-        // Get current verses count
-        const versesCount = await storage.getVersesCount();
-        
-        // Check if we have a substantial number of verses already
-        if (versesCount < 1000) {
-          console.log('Starting comprehensive Bible data download...');
-          
-          // Start with partial download to get essential chapters quickly
-          await loadPartialBibleData();
-          
-          // Then continue with the full Bible in the background
-          // This ensures we have the most commonly used verses available quickly
-          // while the rest of the Bible downloads in the background
-          loadFullBibleData().catch(err => {
-            console.error('Error loading full Bible data:', err);
-          });
-        } else {
-          console.log(`Already have ${versesCount} Bible verses. Skipping initial download.`);
-        }
-      } catch (err) {
-        console.error('Error loading Bible data:', err);
-      }
-    }, 5000); // Give the server some time to initialize before loading the full data
   } catch (error) {
     console.error('Failed to load Bible texts:', error);
   }
