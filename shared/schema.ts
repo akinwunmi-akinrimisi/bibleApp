@@ -56,12 +56,13 @@ export const detectionHistory = pgTable("detection_history", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
-// Bible verses
+// Bible verses with vector embeddings
 export const bibleVerses = pgTable("bible_verses", {
   id: serial("id").primaryKey(),
   reference: text("reference").notNull(),
   text: text("text").notNull(),
   version: text("version").notNull(),
+  embedding: text("embedding"), // JSON string of vector embeddings for semantic search
 });
 
 // Feedback data for model training

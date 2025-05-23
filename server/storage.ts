@@ -42,9 +42,12 @@ export interface IStorage {
   // Bible verse operations
   getVerseByReference(reference: string, version: string): Promise<any | undefined>;
   searchVersesByText(text: string, version: string): Promise<any[]>;
+  searchVersesByEmbedding(embedding: number[], version: string): Promise<any[]>;
   addVerse(verse: { reference: string, text: string, version: string }): Promise<void>;
   getVersesCount(): Promise<number>;
   getVersesCountByVersion(): Promise<Record<string, number>>;
+  getVersesWithoutEmbeddings(): Promise<{id: number, reference: string, text: string}[]>;
+  updateVerseEmbedding(id: number, embedding: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -245,6 +248,23 @@ export class DatabaseStorage implements IStorage {
       return {};
     }
   }
+}
+
+// Helper function for cosine similarity calculation
+function calculateCosineSimilarity(vecA: number[], vecB: number[]): number {
+  if (vecA.length !== vecB.length) return 0;
+  
+  let dotProduct = 0;
+  let normA = 0;
+  let normB = 0;
+  
+  for (let i = 0; i < vecA.length; i++) {
+    dotProduct += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  
+  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
 export const storage = new DatabaseStorage();

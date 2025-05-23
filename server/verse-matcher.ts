@@ -118,22 +118,14 @@ export async function processAudio(audioBuffer: Buffer, settings: { bibleVersion
       }
     }
     
-    // If no explicit references or AI matches, do semantic search
+    // If no explicit references or AI matches, do semantic search using embeddings
     if (matches.length < 5) {
-      const semanticMatches = await storage.searchVersesByText(transcriptionText, settings.bibleVersion);
-      
-      // Add confidence scores and filter by threshold
-      const confidenceMatches = semanticMatches
-        .map((verse, index) => ({
-          ...verse,
-          confidence: Math.round(Math.max(92 - (index * 3), 50)) // Simple confidence scoring based on position
-        }))
-        .filter(verse => verse.confidence >= settings.confidenceThreshold);
+      const semanticMatches = await performSemanticSearch(transcriptionText, settings.bibleVersion, settings.confidenceThreshold);
       
       // Combine matches, removing duplicates
       const existingRefs = new Set(matches.map(m => m.reference));
       
-      for (const match of confidenceMatches) {
+      for (const match of semanticMatches) {
         if (!existingRefs.has(match.reference)) {
           matches.push(match);
           existingRefs.add(match.reference);
@@ -155,4 +147,79 @@ export async function processAudio(audioBuffer: Buffer, settings: { bibleVersion
     text: transcriptionText,
     matches: matches.slice(0, 10) // Return top 10 matches
   };
+}
+
+// Advanced semantic search using OpenAI embeddings for better verse matching
+async function performSemanticSearch(transcriptionText: string, bibleVersion: string, confidenceThreshold: number): Promise<any[]> {
+  try {
+    // Generate embedding for the transcription text
+    const embeddingResponse = await openai.embeddings.create({
+      model: "text-embedding-3-small", // Latest and most cost-effective embedding model
+      input: transcriptionText,
+    });
+    
+    const transcriptionEmbedding = embeddingResponse.data[0].embedding;
+    
+    // Search for verses with pre-computed embeddings using cosine similarity
+    const semanticMatches = await storage.searchVersesByEmbedding(transcriptionEmbedding, bibleVersion);
+    
+    // Filter by confidence threshold and ensure we return the top 10
+    return semanticMatches
+      .filter(match => match.confidence >= confidenceThreshold)
+      .slice(0, 10);
+      
+  } catch (error) {
+    console.error('Error in semantic search:', error);
+    // Fallback to text-based search
+    const fallbackMatches = await storage.searchVersesByText(transcriptionText, bibleVersion);
+    return fallbackMatches
+      .map((verse, index) => ({
+        ...verse,
+        confidence: Math.round(Math.max(85 - (index * 5), 50))
+      }))
+      .filter(verse => verse.confidence >= confidenceThreshold)
+      .slice(0, 10);
+  }
+}
+
+// Generate embeddings for Bible verses (run once during setup)
+export async function generateVerseEmbeddings(batchSize: number = 100): Promise<void> {
+  console.log('Generating embeddings for Bible verses...');
+  
+  try {
+    const versesWithoutEmbeddings = await storage.getVersesWithoutEmbeddings();
+    console.log(`Found ${versesWithoutEmbeddings.length} verses without embeddings`);
+    
+    // Process in batches to respect OpenAI rate limits
+    for (let i = 0; i < versesWithoutEmbeddings.length; i += batchSize) {
+      const batch = versesWithoutEmbeddings.slice(i, i + batchSize);
+      console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(versesWithoutEmbeddings.length/batchSize)}`);
+      
+      // Generate embeddings for batch
+      const texts = batch.map(verse => `${verse.reference}: ${verse.text}`);
+      
+      const embeddingResponse = await openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: texts,
+      });
+      
+      // Update verses with embeddings
+      for (let j = 0; j < batch.length; j++) {
+        const verse = batch[j];
+        const embedding = embeddingResponse.data[j].embedding;
+        
+        await storage.updateVerseEmbedding(verse.id, JSON.stringify(embedding));
+      }
+      
+      // Rate limiting: wait 1 second between batches
+      if (i + batchSize < versesWithoutEmbeddings.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+    
+    console.log('Embedding generation complete!');
+  } catch (error) {
+    console.error('Error generating embeddings:', error);
+    throw error;
+  }
 }
