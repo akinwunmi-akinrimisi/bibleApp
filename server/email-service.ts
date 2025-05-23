@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 
 const CONVERTKIT_API_KEY = 'm4VXYuLNUDRbRFVhx8L2-w';
+const CONVERTKIT_API_SECRET = '2JXgD9HK0WJskLgDpFcEcQK4JDenlOCZPgPURpq0jbQ';
 const CONVERTKIT_API_URL = 'https://api.convertkit.com/v3';
 
 // Email verification service powered by ConvertKit
