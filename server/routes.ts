@@ -5,10 +5,40 @@ import { setupWebSocket } from "./websocket";
 import { authenticateUser, validatePassword, generatePasswordHash, requireAuth } from "./auth";
 import { searchVerses, getBibleVerses } from "./bible-service";
 import { emailService } from "./email-service";
+import { generateJWT, jwtAuth, AuthenticatedRequest } from "./middleware/auth";
+import { loginValidation, feedbackValidation, settingsValidation } from "./middleware/validation";
+import syncRoutes from "./api/sync";
 import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
 import bibleRoutes from "./routes/bible-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Security middleware
+  app.use(helmet());
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production' 
+      ? ['https://verseprojection.com'] 
+      : ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true
+  }));
+
+  // Rate limiting
+  const generalRateLimit = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 100, // Max 100 requests per minute
+    message: { error: { code: 429, message: 'Too many requests' } }
+  });
+  
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Max 10 auth attempts per 15 minutes
+    message: { error: { code: 429, message: 'Too many login attempts' } }
+  });
+
+  app.use('/api', generalRateLimit);
+  
   // Create HTTP server
   const httpServer = createServer(app);
   
@@ -21,8 +51,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Bible routes
   apiRouter.use('/bible', bibleRoutes);
   
-  // Auth routes
-  apiRouter.post('/auth/login', async (req, res) => {
+  // Register sync routes
+  apiRouter.use('/sync', syncRoutes);
+
+  // Enhanced auth routes with JWT
+  apiRouter.post('/auth/login', authRateLimit, loginValidation, async (req, res) => {
     try {
       const { username, password } = req.body;
       
@@ -42,10 +75,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'Invalid credentials' });
       }
       
-      // Set user session
+      // Set user session and generate JWT
       req.session.userId = user.id;
+      const token = generateJWT(user.id, user.email || '');
       
-      return res.json({ id: user.id, username: user.username });
+      return res.json({ 
+        id: user.id, 
+        username: user.username,
+        email: user.email,
+        token,
+        expiresIn: '24h'
+      });
     } catch (error) {
       console.error('Login error:', error);
       return res.status(500).json({ message: 'Internal server error' });
