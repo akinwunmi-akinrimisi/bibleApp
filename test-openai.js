@@ -14,7 +14,7 @@ async function testOpenAI() {
       messages: [
         {
           role: "system",
-          content: "You are a Bible verse detection system. Analyze the following text and identify any Bible verses mentioned."
+          content: "You are a Bible verse detection system. Analyze the following text and identify any Bible verses mentioned. Respond in JSON format with the verse reference and confidence score."
         },
         {
           role: "user", 
