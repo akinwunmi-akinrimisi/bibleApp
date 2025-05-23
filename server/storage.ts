@@ -48,6 +48,11 @@ export interface IStorage {
   getVersesCountByVersion(): Promise<Record<string, number>>;
   getVersesWithoutEmbeddings(): Promise<{id: number, reference: string, text: string}[]>;
   updateVerseEmbedding(id: number, embedding: string): Promise<void>;
+  
+  // Additional methods for sync and offline support
+  getFeedbackByTimestamp(userId: number, timestamp: Date): Promise<FeedbackData | undefined>;
+  getRecentFeedbackCount(userId: number, days: number): Promise<number>;
+  getPopularVerses(version: string, limit: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {

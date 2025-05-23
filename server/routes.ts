@@ -55,24 +55,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   apiRouter.use('/sync', syncRoutes);
 
   // Enhanced auth routes with JWT
-  apiRouter.post('/auth/login', authRateLimit, loginValidation, async (req, res) => {
+  apiRouter.post('/auth/login', authRateLimit, loginValidation, async (req: any, res: any) => {
     try {
-      const { username, password } = req.body;
+      const { email, password } = req.body;
       
-      if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+      if (!email || !password) {
+        return res.status(400).json({ 
+          error: { code: 400, message: 'Email and password are required' }
+        });
       }
       
-      const user = await storage.getUserByUsername(username);
+      const user = await storage.getUserByEmail(email);
       
       if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        return res.status(401).json({ 
+          error: { code: 401, message: 'Invalid credentials' }
+        });
       }
       
       const isPasswordValid = await validatePassword(password, user.password);
       
       if (!isPasswordValid) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        return res.status(401).json({ 
+          error: { code: 401, message: 'Invalid credentials' }
+        });
       }
       
       // Set user session and generate JWT
@@ -80,15 +86,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const token = generateJWT(user.id, user.email || '');
       
       return res.json({ 
-        id: user.id, 
-        username: user.username,
-        email: user.email,
+        user: {
+          id: user.id, 
+          username: user.username,
+          email: user.email,
+          subscriptionTier: user.subscriptionTier
+        },
         token,
         expiresIn: '24h'
       });
     } catch (error) {
       console.error('Login error:', error);
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ 
+        error: { code: 500, message: 'Internal server error' }
+      });
     }
   });
   
