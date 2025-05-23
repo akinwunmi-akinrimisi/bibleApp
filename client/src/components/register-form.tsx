@@ -248,10 +248,11 @@ export function RegisterForm({ onRegisterSuccess, onSwitchToLogin }: RegisterFor
 
             <Button 
               type="submit" 
-              className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-md mt-6"
+              className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-md mt-6"
               disabled={registerMutation.isPending}
+              onClick={form.handleSubmit(onSubmit)}
             >
-              {registerMutation.isPending ? 'Creating account...' : 'Create account'}
+              {registerMutation.isPending ? 'Creating account...' : 'Create Account'}
             </Button>
           </form>
         </Form>

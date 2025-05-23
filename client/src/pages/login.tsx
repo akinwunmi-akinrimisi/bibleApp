@@ -23,7 +23,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         </div>
       ) : (
         <RegisterForm 
-          onRegisterSuccess={handleSwitchToLogin} 
+          onRegisterSuccess={() => window.location.href = "/dashboard"} 
           onSwitchToLogin={handleSwitchToLogin} 
         />
       )}
