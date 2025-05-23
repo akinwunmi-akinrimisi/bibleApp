@@ -16,6 +16,7 @@ export const users = pgTable("users", {
   emailVerificationExpires: timestamp("email_verification_expires"),
   subscriptionStatus: text("subscription_status").default("trial"),
   subscriptionPlan: text("subscription_plan"),
+  subscriptionTier: text("subscription_tier").default("starter"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   trialEnabled: boolean("trial_enabled").default(true),

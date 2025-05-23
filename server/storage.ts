@@ -253,6 +253,150 @@ export class DatabaseStorage implements IStorage {
       return {};
     }
   }
+
+  // Embedding-based search for AI verse matching
+  async searchVersesByEmbedding(embedding: number[], version: string): Promise<any[]> {
+    try {
+      const verses = await db
+        .select()
+        .from(bibleVerses)
+        .where(and(
+          eq(bibleVerses.version, version),
+          sql`${bibleVerses.embedding} IS NOT NULL`
+        ))
+        .limit(50);
+
+      // Calculate similarity scores and sort by relevance
+      const versesWithSimilarity = verses
+        .map(verse => {
+          if (!verse.embedding) return null;
+          
+          let parsedEmbedding: number[];
+          try {
+            parsedEmbedding = JSON.parse(verse.embedding);
+          } catch {
+            return null;
+          }
+          
+          const similarity = calculateCosineSimilarity(embedding, parsedEmbedding);
+          return {
+            reference: verse.reference,
+            text: verse.text,
+            version: verse.version,
+            confidence: Math.round(similarity * 100)
+          };
+        })
+        .filter(verse => verse !== null && verse.confidence > 70)
+        .sort((a, b) => (b?.confidence || 0) - (a?.confidence || 0))
+        .slice(0, 10);
+
+      return versesWithSimilarity;
+    } catch (error) {
+      console.error('Error searching verses by embedding:', error);
+      return [];
+    }
+  }
+
+  // Get verses without embeddings for AI processing
+  async getVersesWithoutEmbeddings(): Promise<{id: number, reference: string, text: string}[]> {
+    try {
+      const verses = await db
+        .select({
+          id: bibleVerses.id,
+          reference: bibleVerses.reference,
+          text: bibleVerses.text
+        })
+        .from(bibleVerses)
+        .where(sql`${bibleVerses.embedding} IS NULL`)
+        .limit(100);
+      
+      return verses;
+    } catch (error) {
+      console.error('Error getting verses without embeddings:', error);
+      return [];
+    }
+  }
+
+  // Update verse with AI-generated embedding
+  async updateVerseEmbedding(id: number, embedding: string): Promise<void> {
+    try {
+      await db
+        .update(bibleVerses)
+        .set({ embedding })
+        .where(eq(bibleVerses.id, id));
+    } catch (error) {
+      console.error('Error updating verse embedding:', error);
+      throw error;
+    }
+  }
+
+  // Get feedback by timestamp for sync operations
+  async getFeedbackByTimestamp(userId: number, timestamp: Date): Promise<FeedbackData | undefined> {
+    try {
+      const [feedback] = await db
+        .select()
+        .from(feedbackData)
+        .where(and(
+          eq(feedbackData.userId, userId),
+          eq(feedbackData.timestamp, timestamp)
+        ));
+      
+      return feedback;
+    } catch (error) {
+      console.error('Error getting feedback by timestamp:', error);
+      return undefined;
+    }
+  }
+
+  // Get recent feedback count for rate limiting
+  async getRecentFeedbackCount(userId: number, days: number): Promise<number> {
+    try {
+      const sinceDate = new Date();
+      sinceDate.setDate(sinceDate.getDate() - days);
+      
+      const [result] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(feedbackData)
+        .where(and(
+          eq(feedbackData.userId, userId),
+          sql`${feedbackData.timestamp} >= ${sinceDate}`
+        ));
+      
+      return result?.count || 0;
+    } catch (error) {
+      console.error('Error getting recent feedback count:', error);
+      return 0;
+    }
+  }
+
+  // Get popular verses for recommendations
+  async getPopularVerses(version: string, limit: number): Promise<any[]> {
+    try {
+      const verses = await db
+        .select({
+          reference: bibleVerses.reference,
+          text: bibleVerses.text,
+          version: bibleVerses.version,
+          usage_count: sql<number>`count(${detectionHistory.selectedVerse})`
+        })
+        .from(bibleVerses)
+        .leftJoin(detectionHistory, eq(bibleVerses.reference, detectionHistory.selectedVerse))
+        .where(eq(bibleVerses.version, version))
+        .groupBy(bibleVerses.reference, bibleVerses.text, bibleVerses.version)
+        .orderBy(sql`count(${detectionHistory.selectedVerse}) DESC`)
+        .limit(limit);
+      
+      return verses.map(verse => ({
+        reference: verse.reference,
+        text: verse.text,
+        version: verse.version,
+        confidence: 100
+      }));
+    } catch (error) {
+      console.error('Error getting popular verses:', error);
+      return [];
+    }
+  }
 }
 
 // Helper function for cosine similarity calculation
