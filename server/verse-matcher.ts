@@ -53,18 +53,17 @@ export async function processAudio(audioBuffer: Buffer, settings: { bibleVersion
     const referenceRegex = /([1-3]?\s?[A-Za-z]+)\s+(\d+):(\d+)(?:-(\d+))?/g;
     const references = transcriptionText.match(referenceRegex);
     
-    // Step 2: Use OpenAI to help identify potential Bible verses in the text
-    // This improves detection of paraphrased or non-explicitly referenced verses
+    // Step 2: Enhanced GPT-4o detection for paraphrased content (PRD requirement)
     const aiDetection = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
-          content: "You are a Bible scholar expert at identifying Bible verses. Given a transcription of spoken text, identify any potential Bible verses mentioned, either as direct quotes or paraphrased. For each potential verse, provide the reference and confidence level (0-100)."
+          content: `You are a Bible verse detection expert for sermon analysis. Identify Bible verses that are quoted, paraphrased, or referenced in spoken text. Focus on ${settings.bibleVersion} version. Provide confidence scores 0-100 and only include matches >= ${settings.confidenceThreshold}.`
         },
         {
           role: "user",
-          content: `Identify Bible verses in this transcription: "${transcriptionText}"`
+          content: `Analyze this sermon text and identify any Bible verses (explicit references, direct quotes, or paraphrases): "${transcriptionText}"`
         }
       ],
       response_format: { type: "json_object" }
