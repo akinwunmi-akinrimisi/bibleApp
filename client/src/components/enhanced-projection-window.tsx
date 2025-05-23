@@ -1,5 +1,16 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Maximize2, 
+  Minimize2, 
+  Settings, 
+  Monitor, 
+  Eye,
+  EyeOff,
+  RotateCcw
+} from "lucide-react";
 
 interface ProjectionSettings {
   fontSize: number;
@@ -24,167 +35,371 @@ interface VerseData {
 export function EnhancedProjectionWindow() {
   const [currentVerse, setCurrentVerse] = useState<VerseData | null>(null);
   const [settings, setSettings] = useState<ProjectionSettings>({
-    fontSize: 48,
-    textColor: '#FFFFFF',
-    backgroundColor: '#000000',
-    fontFamily: 'Inter',
-    fontWeight: 'normal',
-    textAlign: 'center',
-    projectionTheme: 'dark',
+    fontSize: 32,
+    textColor: "#FFFFFF",
+    backgroundColor: "#000000",
+    fontFamily: "Roboto",
+    fontWeight: "500",
+    textAlign: "center",
+    projectionTheme: "classic",
     textShadow: true,
     fadeAnimation: true,
-    displayDuration: 0
+    displayDuration: 8
   });
-  const [isVisible, setIsVisible] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [projectionWindow, setProjectionWindow] = useState<Window | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // Listen for messages from parent window (dashboard)
   useEffect(() => {
-    // Listen for messages from parent window
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'PROJECT_VERSE') {
-        setCurrentVerse(event.data.verse);
-        setIsVisible(true);
-        
-        // Auto-hide after duration if set
-        if (settings.displayDuration > 0) {
-          setTimeout(() => {
-            setIsVisible(false);
-          }, settings.displayDuration * 1000);
+      if (event.origin !== window.location.origin) return;
+
+      const { type, data } = event.data;
+
+      switch (type) {
+        case "PROJECT_VERSE":
+          handleProjectVerse(data.verse);
+          break;
+        case "UPDATE_SETTINGS":
+          setSettings(prev => ({ ...prev, ...data.settings }));
+          break;
+        case "HIDE_PROJECTION":
+          setIsVisible(false);
+          break;
+        case "SHOW_PROJECTION":
+          setIsVisible(true);
+          break;
+        case "CLEAR_PROJECTION":
+          handleClearProjection();
+          break;
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  // Load settings from localStorage or API
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const savedSettings = localStorage.getItem("projectionSettings");
+        if (savedSettings) {
+          setSettings(prev => ({ ...prev, ...JSON.parse(savedSettings) }));
         }
-      } else if (event.data.type === 'UPDATE_SETTINGS') {
-        setSettings(event.data.settings);
-      } else if (event.data.type === 'HIDE_VERSE') {
-        setIsVisible(false);
-      } else if (event.data.type === 'CLEAR_VERSE') {
+      } catch (error) {
+        console.error("Failed to load projection settings:", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  // Auto-hide verse after display duration
+  useEffect(() => {
+    if (!currentVerse || !isVisible) return;
+
+    const timer = setTimeout(() => {
+      if (settings.fadeAnimation) {
+        handleFadeOut();
+      } else {
         setCurrentVerse(null);
-        setIsVisible(false);
       }
+    }, settings.displayDuration * 1000);
+
+    return () => clearTimeout(timer);
+  }, [currentVerse, isVisible, settings.displayDuration, settings.fadeAnimation]);
+
+  const handleProjectVerse = async (verse: VerseData) => {
+    if (settings.fadeAnimation && currentVerse) {
+      // Fade out current verse first
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentVerse(verse);
+        setIsVisible(true);
+        setIsTransitioning(false);
+      }, 200);
+    } else {
+      setCurrentVerse(verse);
+      setIsVisible(true);
+    }
+  };
+
+  const handleFadeOut = () => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentVerse(null);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  const handleClearProjection = () => {
+    if (settings.fadeAnimation) {
+      handleFadeOut();
+    } else {
+      setCurrentVerse(null);
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+
+  const openProjectionWindow = () => {
+    const newWindow = window.open(
+      "/projection",
+      "projection",
+      "width=1920,height=1080,fullscreen=yes,menubar=no,toolbar=no,location=no,status=no"
+    );
+    setProjectionWindow(newWindow);
+  };
+
+  const getTextShadowStyle = () => {
+    if (!settings.textShadow) return {};
+    
+    return {
+      textShadow: `2px 2px 4px rgba(0, 0, 0, 0.8), 
+                   -1px -1px 2px rgba(0, 0, 0, 0.5),
+                   1px -1px 2px rgba(0, 0, 0, 0.5),
+                   -1px 1px 2px rgba(0, 0, 0, 0.5)`
+    };
+  };
+
+  const getBackgroundStyle = () => {
+    const base = {
+      backgroundColor: settings.backgroundColor,
     };
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [settings.displayDuration]);
+    if (settings.backgroundImage) {
+      return {
+        ...base,
+        backgroundImage: `url(${settings.backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      };
+    }
 
-  const getThemeStyles = () => {
-    const themes = {
-      dark: {
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        overlay: 'rgba(0, 0, 0, 0.3)'
-      },
-      light: {
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-        overlay: 'rgba(255, 255, 255, 0.8)'
-      },
-      gradient: {
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        overlay: 'rgba(0, 0, 0, 0.2)'
-      },
-      nature: {
-        background: 'linear-gradient(135deg, #134e5e 0%, #71b280 100%)',
-        overlay: 'rgba(0, 0, 0, 0.3)'
-      },
-      sunset: {
-        background: 'linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%)',
-        overlay: 'rgba(0, 0, 0, 0.2)'
-      }
-    };
+    // Add gradient for certain themes
+    if (settings.projectionTheme === "gradient") {
+      return {
+        ...base,
+        background: `linear-gradient(135deg, ${settings.backgroundColor} 0%, ${adjustColor(settings.backgroundColor, -20)} 100%)`
+      };
+    }
 
-    return themes[settings.projectionTheme as keyof typeof themes] || themes.dark;
+    return base;
   };
 
-  const themeStyles = getThemeStyles();
-
-  const containerStyle = {
-    background: settings.backgroundImage 
-      ? `url(${settings.backgroundImage})` 
-      : themeStyles.background,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
+  const adjustColor = (color: string, amount: number) => {
+    // Simple color adjustment utility
+    const hex = color.replace('#', '');
+    const num = parseInt(hex, 16);
+    const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+    const g = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amount));
+    const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+    return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
   };
 
-  const textStyle = {
-    fontSize: `${settings.fontSize}px`,
-    color: settings.textColor,
-    fontFamily: settings.fontFamily,
-    fontWeight: settings.fontWeight,
-    textAlign: settings.textAlign as 'left' | 'center' | 'right',
-    textShadow: settings.textShadow 
-      ? '2px 2px 4px rgba(0, 0, 0, 0.7)' 
-      : 'none',
-    lineHeight: 1.4,
-    letterSpacing: '0.5px'
-  };
-
-  return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center p-8"
-      style={containerStyle}
+  const projectionContent = (
+    <div
+      ref={containerRef}
+      className={`h-screen flex flex-col justify-center items-center p-8 transition-all duration-200 ${
+        isTransitioning ? 'opacity-0' : 'opacity-100'
+      }`}
+      style={getBackgroundStyle()}
     >
-      {/* Background overlay */}
-      <div 
-        className="absolute inset-0"
-        style={{ backgroundColor: themeStyles.overlay }}
-      />
-      
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto">
-        <AnimatePresence mode="wait">
-          {isVisible && currentVerse && (
-            <motion.div
-              initial={settings.fadeAnimation ? { opacity: 0, scale: 0.9 } : { opacity: 1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={settings.fadeAnimation ? { opacity: 0, scale: 0.9 } : { opacity: 1 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-center space-y-6"
-            >
-              {/* Main verse text */}
-              <motion.div
-                initial={settings.fadeAnimation ? { y: 20, opacity: 0 } : {}}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                style={textStyle}
-                className="leading-relaxed"
-              >
-                {currentVerse.text}
-              </motion.div>
-              
-              {/* Reference */}
-              <motion.div
-                initial={settings.fadeAnimation ? { y: 20, opacity: 0 } : {}}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                style={{
-                  ...textStyle,
-                  fontSize: `${Math.max(settings.fontSize * 0.6, 24)}px`,
-                  opacity: 0.9,
-                  fontWeight: '600'
-                }}
-              >
-                {currentVerse.reference} ({currentVerse.version})
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* No verse placeholder */}
-        {!isVisible && (
-          <div 
-            className="text-center opacity-30"
+      {currentVerse && isVisible ? (
+        <>
+          {/* Main verse text */}
+          <div
+            className="max-w-6xl text-center leading-relaxed mb-8"
             style={{
+              fontSize: `${settings.fontSize}px`,
+              fontFamily: settings.fontFamily,
+              fontWeight: settings.fontWeight,
               color: settings.textColor,
-              fontSize: `${Math.max(settings.fontSize * 0.5, 20)}px`,
-              fontFamily: settings.fontFamily
+              textAlign: settings.textAlign as any,
+              ...getTextShadowStyle()
+            }}
+            aria-live="polite"
+          >
+            {currentVerse.text}
+          </div>
+
+          {/* Reference */}
+          <div
+            className="text-center mb-4"
+            style={{
+              fontSize: `${settings.fontSize * 0.6}px`,
+              fontFamily: settings.fontFamily,
+              fontWeight: "600",
+              color: settings.textColor,
+              opacity: 0.9,
+              ...getTextShadowStyle()
             }}
           >
-            Ready for projection...
+            {currentVerse.reference}
           </div>
-        )}
-      </div>
 
-      {/* Keyboard shortcuts hint */}
-      <div className="absolute bottom-4 right-4 text-xs opacity-50" style={{ color: settings.textColor }}>
-        Press ESC to clear • Space to hide/show
-      </div>
+          {/* Version */}
+          <div
+            className="absolute bottom-8 right-8"
+            style={{
+              fontSize: `${settings.fontSize * 0.4}px`,
+              fontFamily: settings.fontFamily,
+              fontWeight: "400",
+              color: settings.textColor,
+              opacity: 0.7,
+              ...getTextShadowStyle()
+            }}
+          >
+            {currentVerse.version}
+          </div>
+        </>
+      ) : (
+        /* Empty state */
+        <div className="text-center text-gray-500 dark:text-gray-400">
+          <Monitor className="w-16 h-16 mx-auto mb-4 opacity-50" />
+          <p className="text-xl opacity-75">Ready for Projection</p>
+          <p className="text-sm opacity-50 mt-2">Waiting for verse selection...</p>
+        </div>
+      )}
+
+      {/* Control overlay (only visible on hover in fullscreen) */}
+      {isFullscreen && (
+        <div className="absolute top-4 right-4 opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsVisible(!isVisible)}
+              className="bg-black/20 backdrop-blur border-white/20 text-white hover:bg-white/20"
+            >
+              {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearProjection}
+              className="bg-black/20 backdrop-blur border-white/20 text-white hover:bg-white/20"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleFullscreen}
+              className="bg-black/20 backdrop-blur border-white/20 text-white hover:bg-white/20"
+            >
+              <Minimize2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
+  );
+
+  // If this component is being used as a standalone projection window
+  if (window.location.pathname === '/projection') {
+    return projectionContent;
+  }
+
+  // Preview mode for dashboard
+  return (
+    <Card className="w-full">
+      <CardContent className="p-0">
+        {/* Preview header */}
+        <div className="flex items-center justify-between p-4 border-b bg-gray-50 dark:bg-gray-800">
+          <div className="flex items-center space-x-3">
+            <Monitor className="w-5 h-5 text-blue-600" />
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Projection Preview
+            </h3>
+            {currentVerse && (
+              <Badge variant="default" className="text-xs">
+                Live
+              </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsVisible(!isVisible)}
+              className="text-xs"
+            >
+              {isVisible ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+              {isVisible ? "Hide" : "Show"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearProjection}
+              className="text-xs"
+            >
+              <RotateCcw className="w-3 h-3 mr-1" />
+              Clear
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openProjectionWindow}
+              className="text-xs"
+            >
+              <Maximize2 className="w-3 h-3 mr-1" />
+              Open Window
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleFullscreen}
+              className="text-xs"
+            >
+              <Monitor className="w-3 h-3 mr-1" />
+              Fullscreen
+            </Button>
+          </div>
+        </div>
+
+        {/* Preview content */}
+        <div className="aspect-video bg-black relative overflow-hidden">
+          <div className="transform scale-[0.3] origin-top-left w-[333.33%] h-[333.33%]">
+            {projectionContent}
+          </div>
+          
+          {/* Preview overlay */}
+          <div className="absolute inset-0 border-2 border-dashed border-gray-600 pointer-events-none" />
+          
+          {/* Resolution indicator */}
+          <div className="absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
+            1920×1080 Preview
+          </div>
+        </div>
+
+        {/* Quick settings */}
+        <div className="p-4 bg-gray-50 dark:bg-gray-800 border-t">
+          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+            <span>Font: {settings.fontFamily} {settings.fontSize}pt</span>
+            <span>Theme: {settings.projectionTheme}</span>
+            <span>Duration: {settings.displayDuration}s</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
