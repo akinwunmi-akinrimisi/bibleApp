@@ -26,6 +26,7 @@ const registerSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   organizationName: z.string().min(1, 'Organization or individual name is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   confirmPassword: z.string(),
   trialAccess: z.boolean().default(true)
 }).refine((data) => data.password === data.confirmPassword, {
@@ -52,6 +53,7 @@ export function RegisterForm({ onRegisterSuccess, onSwitchToLogin }: RegisterFor
       email: '',
       organizationName: '',
       password: '',
+      username: '',
       confirmPassword: '',
       trialAccess: true,
     },
