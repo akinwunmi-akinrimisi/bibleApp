@@ -39,7 +39,7 @@ export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: '',
+      email: '',
       password: '',
     },
   });
