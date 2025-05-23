@@ -61,16 +61,27 @@ export function RegisterForm({ onRegisterSuccess, onSwitchToLogin }: RegisterFor
 
   const registerMutation = useMutation({
     mutationFn: async (data: Omit<RegisterFormValues, 'confirmPassword'>) => {
-      const { confirmPassword, ...registerData } = data as any;
-      const response = await apiRequest('POST', '/api/auth/register', registerData);
+      const response = await apiRequest('POST', '/api/auth/register', data);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: 'Success',
-        description: 'Account created successfully',
-      });
-      onRegisterSuccess();
+    onSuccess: (data) => {
+      if (data.requiresVerification) {
+        toast({
+          title: "Registration successful! 📧",
+          description: "Please check your email for verification code.",
+        });
+        onRegisterSuccess(data.email || '', true);
+      } else {
+        toast({
+          title: "Registration successful! 🎉",
+          description: "Welcome to VerseProjection!",
+        });
+        onRegisterSuccess(data.email || '', false);
+      }
     },
     onError: (error) => {
       toast({

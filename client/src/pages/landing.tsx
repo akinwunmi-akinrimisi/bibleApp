@@ -82,11 +82,12 @@ export default function LandingPage() {
             <div className="md:w-1/2 md:pl-10 animate-slideInRight">
               <div className="sleek-card relative overflow-hidden">
                 <div className="absolute -top-6 -right-6 w-12 h-12 bg-primary rounded-full opacity-40 blur-md"></div>
-                <img 
-                  src="https://i.imgur.com/8cwmZQl.png" 
-                  alt="VerseProjection in action" 
-                  className="w-full rounded-t-lg"
-                />
+                <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-8 text-white text-center">
+                  <BookOpen className="w-16 h-16 mx-auto mb-4" />
+                  <div className="text-xl font-bold mb-2">"For God so loved the world..."</div>
+                  <div className="text-sm opacity-90">John 3:16 (KJV)</div>
+                </div>
+
                 <div className="p-6 bg-white dark:bg-gray-800">
                   <p className="text-center text-gray-700 dark:text-gray-300 italic text-lg">
                     "And the Word became flesh and dwelt among us..."
