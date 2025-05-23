@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { useThemeContext } from '@/components/theme-provider';
+import { useTheme } from '@/components/theme-provider';
 import { apiRequest } from '@/lib/queryClient';
 
 import {
@@ -33,7 +33,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onLoginSuccess, onSwitchToRegister }: LoginFormProps) {
-  const { theme, toggleTheme } = useThemeContext();
+  const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   
   const form = useForm<LoginFormValues>({

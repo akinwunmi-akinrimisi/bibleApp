@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { useThemeContext } from '@/components/theme-provider';
+import { useTheme } from '@/components/theme-provider';
 import { Separator } from '@/components/ui/separator';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -14,7 +14,7 @@ interface SidebarProps {
 
 export function Sidebar({ isProjectionActive, toggleProjection, onLogout }: SidebarProps) {
   const [location] = useLocation();
-  const { theme, toggleTheme } = useThemeContext();
+  const { theme, setTheme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const logoutMutation = useMutation({
